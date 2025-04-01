@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karikatuur Generator</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4cb9d6;
+            --light-color: #f5f5f5;
+            --dark-color: #333;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #f9f9f9;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .setup-container, .result-container {
+            display: none;
+        }
+        
+        .setup-container.active, .result-container.active {
+            display: block;
+        }
+        
+        .api-key-container {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .photo-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .camera-box {
+            width: 100%;
+            max-width: 480px;
+            height: 360px;
+            background-color: #eee;
+            margin: 0 auto 1rem;
+            border: 1px solid #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #photo-preview, #video-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .info-form {
+            margin-bottom: 1.5rem;
+        }
+        
+        input[type="text"], 
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        
+        .loading-animation {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading-animation.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            border: 8px solid rgba(76, 185, 214, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        .artist {
+            margin-top: 1rem;
+            animation: appear 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes appear {
+            from {
+                opacity: 0.6;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .result-image-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .image-box {
+            width: 100%;
+            max-width: 480px;
+            height: auto;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            position: relative;
+        }
+        
+        .caption {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .generated-image {
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Karikatuur Generator</h1>
+        <p>Maak je eigen potlood karikatuurtekening met AI</p>
+    </header>
+    
+    <main>
+        <div class="container api-key-container" id="api-key-container">
+            <h2>OpenAI API-sleutel</h2>
+            <p>Voer je OpenAI API-sleutel in om de karikatuurgenerator te gebruiken.</p>
+            <form id="api-key-form">
+                <input type="password" id="api-key-input" placeholder="sk-..." required>
+                <div class="button-group">
+                    <button type="submit">Opslaan</button>
+                </div>
+                <p><small>Je sleutel wordt alleen lokaal op je apparaat opgeslagen.</small></p>
+            </form>
+        </div>
+        
+        <div class="container setup-container" id="setup-container">
+            <div class="grid-container">
+                <div class="photo-section">
+                    <h2>Foto</h2>
+                    <div class="photo-container">
+                        <div class="camera-box">
+                            <video id="video-preview" autoplay playsinline style="display: none;"></video>
+                            <img id="photo-preview" style="display: none;">
+                        </div>
+                        <div class="button-group">
+                            <button id="start-camera-btn">Camera starten</button>
+                            <button id="take-photo-btn" disabled>Foto nemen</button>
+                            <button id="retake-photo-btn" style="display: none;">Opnieuw</button>
+                            <button id="upload-photo-btn">Foto uploaden</button>
+                            <input type="file" id="file-input" style="display: none;" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h2>Kenmerken</h2>
+                    <form id="info-form" class="info-form">
+                        <div>
+                            <label for="name-input">Naam</label>
+                            <input type="text" id="name-input" placeholder="Je naam">
+                        </div>
+                        <div>
+                            <label for="hobbies-input">Hobby's</label>
+                            <textarea id="hobbies-input" placeholder="Beschrijf je hobby's" rows="3"></textarea>
+                        </div>
+                        <div>
+                            <label for="traits-input">Karaktereigenschappen</label>
+                            <textarea id="traits-input" placeholder="Wat kenmerkt jou?" rows="3"></textarea>
+                        </div>
+                        <button type="button" id="generate-btn" disabled>Karikatuur genereren</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container loading-animation" id="loading-container">
+            <div class="spinner"></div>
+            <h2>Artistieke magie aan het werk...</h2>
+            <p>Even geduld terwijl we je karikatuur maken</p>
+            <div class="artist">
+                <p><i>Potlood op papier... lijnen aan het verfijnen... details aan het toevoegen...</i></p>
+            </div>
+        </div>
+        
+        <div class="container result-container" id="result-container">
+            <h2>Je karikatuur is klaar!</h2>
+            <div class="result-grid">
+                <div>
+                    <div class="image-box">
+                        <img id="original-photo" class="generated-image">
+                    </div>
+                    <p class="caption">Originele foto</p>
+                </div>
+                <div>
+                    <div class="image-box">
+                        <img id="karikatuur-result" class="generated-image">
+                    </div>
+                    <p class="caption">Karikatuur tekening</p>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="download-btn">Karikatuur downloaden</button>
+                <button id="new-karikatuur-btn">Nieuwe karikatuur maken</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // App state
+        const state = {
+            apiKey: null,
+            photo: null,
+            stream: null,
+            isGenerating: false
+        };
+        
+        // DOM elementen
+        const apiKeyContainer = document.getElementById('api-key-container');
+        const setupContainer = document.getElementById('setup-container');
+        const loadingContainer = document.getElementById('loading-container');
+        const resultContainer = document.getElementById('result-container');
+        const apiKeyForm = document.getElementById('api-key-form');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const videoPreview = document.getElementById('video-preview');
+        const photoPreview = document.getElementById('photo-preview');
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const takePhotoBtn = document.getElementById('take-photo-btn');
+        const retakePhotoBtn = document.getElementById('retake-photo-btn');
+        const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+        const fileInput = document.getElementById('file-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const nameInput = document.getElementById('name-input');
+        const hobbiesInput = document.getElementById('hobbies-input');
+        const traitsInput = document.getElementById('traits-input');
+        const originalPhoto = document.getElementById('original-photo');
+        const karikatuurResult = document.getElementById('karikatuur-result');
+        const downloadBtn = document.getElementById('download-btn');
+        const newKarikatuurBtn = document.getElementById('new-karikatuur-btn');
+        
+        // Check voor opgeslagen API-sleutel
+        function checkStoredApiKey() {
+            const storedKey = localStorage.getItem('openai-api-key');
+            if (storedKey) {
+                state.apiKey = storedKey;
+                apiKeyContainer.style.display = 'none';
+                setupContainer.classList.add('active');
+            } else {
+                apiKeyContainer.style.display = 'block';
+                setupContainer.classList.remove('active');
+            }
+        }
+        
+        // API-sleutel opslaan
+        apiKeyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const key = apiKeyInput.value.trim();
+            if (key && key.startsWith('sk-')) {
+                localStorage.setItem('openai-api-key', key);
+                state.apiKey = key;
+                apiKeyContainer.style.display = 'none';
+                setupContainer.classList.add('active');
+            } else {
+                alert('Voer een geldige OpenAI API-sleutel in die begint met "sk-"');
+            }
+        });
+        
+        // Camera starten
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                state.stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 480 },
+                        height: { ideal: 360 }
+                    } 
+                });
+                videoPreview.srcObject = state.stream;
+                videoPreview.style.display = 'block';
+                photoPreview.style.display = 'none';
+                takePhotoBtn.disabled = false;
+                retakePhotoBtn.style.display = 'none';
+            } catch (err) {
+                console.error('Camera kon niet worden opgestart:', err);
+                alert('Kon geen toegang krijgen tot de camera. Zorg ervoor dat je toestemming hebt gegeven.');
+            }
+        });
+        
+        // Foto nemen
+        takePhotoBtn.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoPreview.videoWidth;
+            canvas.height = videoPreview.videoHeight;
+            canvas.getContext('2d').drawImage(videoPreview, 0, 0);
+            state.photo = canvas.toDataURL('image/jpeg');
+            
+            photoPreview.src = state.photo;
+            videoPreview.style.display = 'none';
+            photoPreview.style.display = 'block';
+            
+            // Stop camera stream
+            if (state.stream) {
+                state.stream.getTracks().forEach(track => track.stop());
+                state.stream = null;
+            }
+            
+            takePhotoBtn.disabled = true;
+            retakePhotoBtn.style.display = 'inline-block';
+            generateBtn.disabled = false;
+        });
+        
+        // Nieuwe foto nemen
+        retakePhotoBtn.addEventListener('click', () => {
+            state.photo = null;
+            photoPreview.style.display = 'none';
+            retakePhotoBtn.style.display = 'none';
+            startCameraBtn.click(); // Start de camera opnieuw
+            generateBtn.disabled = true;
+        });
+        
+        // Foto uploaden
+        uploadPhotoBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    state.photo = event.target.result;
+                    photoPreview.src = state.photo;
+                    videoPreview.style.display = 'none';
+                    photoPreview.style.display = 'block';
+                    
+                    // Stop camera stream als deze actief is
+                    if (state.stream) {
+                        state.stream.getTracks().forEach(track => track.stop());
+                        state.stream = null;
+                    }
+                    
+                    generateBtn.disabled = false;
+                    retakePhotoBtn.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Karikatuur genereren
+        generateBtn.addEventListener('click', async () => {
+            if (!state.photo) {
+                alert('Neem eerst een foto of upload er een');
+                return;
+            }
+            
+            const name = nameInput.value.trim();
+            const hobbies = hobbiesInput.value.trim();
+            const traits = traitsInput.value.trim();
+            
+            // Toon laadanimatie
+            setupContainer.classList.remove('active');
+            loadingContainer.classList.add('active');
+            state.isGenerating = true;
+            
+            try {
+                // Maak een datum string in Nederlandse notatie
+                const today = new Date();
+                const dateString = today.toLocaleDateString('nl-NL', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric'
+                });
+                
+                // Bouw een veilige prompt voor DALL-E 3
+                let prompt = `Maak een artistieke potlood karikatuurtekening op A4-formaat (portrait). `;
+                
+                if (name) prompt += `Het is een portret van ${name}. `;
+                if (hobbies) prompt += `De persoon houdt van: ${hobbies}. `;
+                if (traits) prompt += `Karaktereigenschappen: ${traits}. `;
+                
+                prompt += `Teken de karikatuur in een zwart-wit potloodstijl, met lichte overdrijving van gezichtskenmerken in een vriendelijke, humoristische stijl. `;
+                prompt += `Maak een gedetailleerde, artistieke tekening, alsof deze met potlood op papier is getekend. `;
+                prompt += `Voeg in de rechter onderhoek een kleine handtekening toe met "ChatGPT" en de datum "${dateString}".`;
+                
+                // Directe aanroep naar DALL-E 3 voor de karikatuur
+                const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${state.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'dall-e-3',
+                        prompt: prompt,
+                        n: 1,
+                        quality: 'hd',
+                        size: '1024x1024',
+                        response_format: 'b64_json',
+                        style: 'natural',
+                        user: 'karikatuur-generator'
+                    })
+                });
+                
+                if (!imageResponse.ok) {
+                    const errorData = await imageResponse.json();
+                    throw new Error(`API error: ${errorData.error?.message || imageResponse.statusText}`);
+                }
+                
+                const imageData = await imageResponse.json();
+                
+                // Toon de resultaatpagina
+                originalPhoto.src = state.photo;
+                karikatuurResult.src = `data:image/png;base64,${imageData.data[0].b64_json}`;
+                
+                loadingContainer.classList.remove('active');
+                resultContainer.classList.add('active');
+                
+                // Maak het mogelijk om op de afbeeldingen te klikken om ze in een nieuw tabblad te openen
+                karikatuurResult.addEventListener('click', () => {
+                    window.open(karikatuurResult.src, '_blank');
+                });
+                
+            } catch (error) {
+                console.error('Fout bij genereren van karikatuur:', error);
+                alert(`Er is een fout opgetreden: ${error.message}`);
+                loadingContainer.classList.remove('active');
+                setupContainer.classList.add('active');
+            } finally {
+                state.isGenerating = false;
+            }
+        });
+        
+        // Karikatuur downloaden
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = karikatuurResult.src;
+            link.download = 'karikatuur.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        
+        // Nieuwe karikatuur maken
+        newKarikatuurBtn.addEventListener('click', () => {
+            // Reset elementen
+            state.photo = null;
+            photoPreview.style.display = 'none';
+            videoPreview.style.display = 'none';
+            generateBtn.disabled = true;
+            nameInput.value = '';
+            hobbiesInput.value = '';
+            traitsInput.value = '';
+            
+            // Verberg resultaat en toon setup
+            resultContainer.classList.remove('active');
+            setupContainer.classList.add('active');
+        });
+        
+        // Initialisatie
+        document.addEventListener('DOMContentLoaded', checkStoredApiKey);
+    </script>
+</body>
+</html> 
