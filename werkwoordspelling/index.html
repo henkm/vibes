@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Werkwoordspelling Trainer</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4cb9d6;
+            --light-color: #f5f5f5;
+            --dark-color: #333;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #f9f9f9;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button.active {
+            background-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        
+        .game-area {
+            margin-top: 2rem;
+        }
+        
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .answer-form {
+            margin-bottom: 2rem;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .feedback {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--error-color);
+            display: block;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .difficulty-select {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-card {
+            background-color: white;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .category-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .category-card.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            button {
+                padding: 0.5rem 1rem;
+            }
+        }
+        
+        .back-button {
+            background-color: var(--secondary-color);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Werkwoordspelling Trainer</h1>
+        <p>Train je werkwoordspelling en sla je voortgang automatisch op</p>
+    </header>
+    
+    <main class="container">
+        <div id="home-screen">
+            <div class="difficulty-select">
+                <h2>Kies een niveau</h2>
+                <div class="options">
+                    <button class="level-btn" data-level="makkelijk">Makkelijk</button>
+                    <button class="level-btn" data-level="gemiddeld">Gemiddeld</button>
+                    <button class="level-btn" data-level="moeilijk">Moeilijk</button>
+                </div>
+            </div>
+            
+            <div id="categories-container">
+                <h2>Kies een categorie</h2>
+                <div class="categories" id="categories-list">
+                    <!-- Categorieën worden hier dynamisch ingevoegd -->
+                </div>
+            </div>
+            
+            <button id="start-game" disabled>Start Training</button>
+        </div>
+        
+        <div id="game-screen" class="hidden">
+            <div class="game-area">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="progress"></div>
+                </div>
+                
+                <button id="game-menu-button" class="back-button">Terug naar menu</button>
+                
+                <div class="question" id="question"></div>
+                
+                <form class="answer-form" id="answer-form">
+                    <input type="text" id="answer-input" placeholder="Type het juiste antwoord..." autocomplete="off">
+                    <button type="submit">Controleer</button>
+                </form>
+                
+                <div class="feedback" id="feedback"></div>
+                
+                <button id="next-question" class="hidden">Volgende vraag</button>
+                <button id="back-to-home" class="hidden">Terug naar hoofdmenu</button>
+            </div>
+            
+            <div class="stats">
+                <div>Correct: <span id="correct-count">0</span></div>
+                <div>Fout: <span id="incorrect-count">0</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Datastructuur voor werkwoordcategorieën en vragen
+        const werkwoordData = {
+            tegenwoordige_tijd: {
+                title: "Tegenwoordige tijd",
+                questions: [
+                    { question: "Ik (lopen) naar school.", answer: "loop" },
+                    { question: "Jij (fietsen) door het park.", answer: "fietst" },
+                    { question: "Hij (werken) in een kantoor.", answer: "werkt" },
+                    { question: "Wij (eten) in een restaurant.", answer: "eten" },
+                    { question: "Jullie (praten) over het weer.", answer: "praten" },
+                    { question: "Zij (dansen) op het feest.", answer: "dansen" },
+                    { question: "Ik (lezen) een boek.", answer: "lees" },
+                    { question: "Jij (schrijven) een brief.", answer: "schrijft" },
+                    { question: "Hij (zwemmen) in het zwembad.", answer: "zwemt" },
+                    { question: "Wij (koken) het avondeten.", answer: "koken" }
+                ]
+            },
+            verleden_tijd: {
+                title: "Verleden tijd",
+                questions: [
+                    { question: "Ik (lopen) naar school.", answer: "liep" },
+                    { question: "Jij (fietsen) door het park.", answer: "fietste" },
+                    { question: "Hij (werken) in een kantoor.", answer: "werkte" },
+                    { question: "Wij (eten) in een restaurant.", answer: "aten" },
+                    { question: "Jullie (praten) over het weer.", answer: "praatten" },
+                    { question: "Zij (dansen) op het feest.", answer: "dansten" },
+                    { question: "Ik (lezen) een boek.", answer: "las" },
+                    { question: "Jij (schrijven) een brief.", answer: "schreef" },
+                    { question: "Hij (zwemmen) in het zwembad.", answer: "zwom" },
+                    { question: "Wij (koken) het avondeten.", answer: "kookten" }
+                ]
+            },
+            voltooid_deelwoord: {
+                title: "Voltooid deelwoord",
+                questions: [
+                    { question: "Ik heb naar school (lopen).", answer: "gelopen" },
+                    { question: "Jij hebt door het park (fietsen).", answer: "gefietst" },
+                    { question: "Hij heeft in een kantoor (werken).", answer: "gewerkt" },
+                    { question: "Wij hebben in een restaurant (eten).", answer: "gegeten" },
+                    { question: "Jullie hebben over het weer (praten).", answer: "gepraat" },
+                    { question: "Zij hebben op het feest (dansen).", answer: "gedanst" },
+                    { question: "Ik heb een boek (lezen).", answer: "gelezen" },
+                    { question: "Jij hebt een brief (schrijven).", answer: "geschreven" },
+                    { question: "Hij heeft in het zwembad (zwemmen).", answer: "gezwommen" },
+                    { question: "Wij hebben het avondeten (koken).", answer: "gekookt" }
+                ]
+            },
+            dt_regels: {
+                title: "d/t regels",
+                questions: [
+                    { question: "Hij (worden) boos.", answer: "wordt" },
+                    { question: "Jij (vinden) dat niet leuk.", answer: "vindt" },
+                    { question: "Het kind (antwoorden) op de vraag.", answer: "antwoordt" },
+                    { question: "De man (houden) van lezen.", answer: "houdt" },
+                    { question: "Zij (zenden) een pakket.", answer: "zendt" },
+                    { question: "Het meisje (binden) haar veters.", answer: "bindt" },
+                    { question: "Hij (landen) op het vliegveld.", answer: "landt" },
+                    { question: "De student (branden) de kaars.", answer: "brandt" },
+                    { question: "Jij (wenden) je tot de manager.", answer: "wendt" },
+                    { question: "De leraar (bereiden) de les voor.", answer: "bereidt" }
+                ]
+            },
+            onregelmatige_ww: {
+                title: "Onregelmatige werkwoorden",
+                questions: [
+                    { question: "Ik (zijn) thuis.", answer: "ben" },
+                    { question: "Jij (zijn) gisteren thuis.", answer: "was" },
+                    { question: "Hij (hebben) een hond.", answer: "heeft" },
+                    { question: "Wij (hebben) gisteren een feest.", answer: "hadden" },
+                    { question: "Ik (gaan) naar school.", answer: "ga" },
+                    { question: "Wij (gaan) gisteren naar het strand.", answer: "gingen" },
+                    { question: "Jij (doen) je best.", answer: "doet" },
+                    { question: "Zij (doen) gisteren boodschappen.", answer: "deden" },
+                    { question: "Ik (zien) een vogel.", answer: "zie" },
+                    { question: "Hij (zien) gisteren een film.", answer: "zag" }
+                ]
+            }
+        };
+
+        // App state
+        let state = {
+            selectedLevel: null,
+            selectedCategory: null,
+            currentQuestions: [],
+            currentQuestionIndex: 0,
+            correctAnswers: 0,
+            incorrectAnswers: 0,
+            mistakeHistory: {},
+            gameActive: false
+        };
+
+        // DOM elementen
+        const homeScreen = document.getElementById('home-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const levelButtons = document.querySelectorAll('.level-btn');
+        const categoriesList = document.getElementById('categories-list');
+        const startGameButton = document.getElementById('start-game');
+        const questionElement = document.getElementById('question');
+        const answerForm = document.getElementById('answer-form');
+        const answerInput = document.getElementById('answer-input');
+        const feedbackElement = document.getElementById('feedback');
+        const nextQuestionButton = document.getElementById('next-question');
+        const backToHomeButton = document.getElementById('back-to-home');
+        const correctCountElement = document.getElementById('correct-count');
+        const incorrectCountElement = document.getElementById('incorrect-count');
+        const progressBar = document.getElementById('progress');
+
+        // Laad de voortgang uit localStorage
+        function loadProgress() {
+            const savedState = localStorage.getItem('werkwoordspelling-progress');
+            if (savedState) {
+                try {
+                    const parsedState = JSON.parse(savedState);
+                    state.mistakeHistory = parsedState.mistakeHistory || {};
+                } catch (e) {
+                    console.error('Fout bij het laden van opgeslagen voortgang:', e);
+                    state.mistakeHistory = {};
+                }
+            }
+        }
+
+        // Sla voortgang op in localStorage
+        function saveProgress() {
+            const progressData = {
+                mistakeHistory: state.mistakeHistory
+            };
+            localStorage.setItem('werkwoordspelling-progress', JSON.stringify(progressData));
+        }
+
+        // Initialiseer categorieën
+        function initializeCategories() {
+            categoriesList.innerHTML = '';
+            
+            Object.keys(werkwoordData).forEach(categoryKey => {
+                const category = werkwoordData[categoryKey];
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'category-card';
+                categoryCard.dataset.category = categoryKey;
+                
+                // Bereken score voor deze categorie (als die er is)
+                let accuracyText = '';
+                if (state.mistakeHistory[categoryKey]) {
+                    const attempts = state.mistakeHistory[categoryKey].correct + state.mistakeHistory[categoryKey].incorrect;
+                    const accuracy = attempts > 0 ? 
+                        Math.round((state.mistakeHistory[categoryKey].correct / attempts) * 100) : 0;
+                    accuracyText = `<p>Score: ${accuracy}%</p>`;
+                }
+                
+                categoryCard.innerHTML = `
+                    <h3>${category.title}</h3>
+                    ${accuracyText}
+                `;
+                
+                categoryCard.addEventListener('click', () => selectCategory(categoryKey, categoryCard));
+                categoriesList.appendChild(categoryCard);
+            });
+        }
+
+        // Level selectie
+        levelButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                levelButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                state.selectedLevel = button.dataset.level;
+                checkStartGameEligibility();
+            });
+        });
+
+        // Categorie selectie
+        function selectCategory(categoryKey, categoryCard) {
+            const allCategoryCards = document.querySelectorAll('.category-card');
+            allCategoryCards.forEach(card => card.classList.remove('selected'));
+            categoryCard.classList.add('selected');
+            state.selectedCategory = categoryKey;
+            checkStartGameEligibility();
+        }
+
+        // Controleer of de gebruiker kan beginnen
+        function checkStartGameEligibility() {
+            if (state.selectedLevel && state.selectedCategory) {
+                startGameButton.disabled = false;
+                startGameButton.focus();
+            } else {
+                startGameButton.disabled = true;
+            }
+        }
+
+        // Start het spel
+        startGameButton.addEventListener('click', startGame);
+
+        function startGame() {
+            state.gameActive = true;
+            state.currentQuestionIndex = 0;
+            state.correctAnswers = 0;
+            state.incorrectAnswers = 0;
+            
+            // Selecteer vragen op basis van niveau en categorie
+            state.currentQuestions = [...werkwoordData[state.selectedCategory].questions];
+            
+            // Shuffle vragen
+            state.currentQuestions = shuffleArray(state.currentQuestions);
+            
+            // Filter op niveau (minder vragen voor makkelijk, meer voor moeilijk)
+            if (state.selectedLevel === 'makkelijk') {
+                state.currentQuestions = state.currentQuestions.slice(0, 5);
+            } else if (state.selectedLevel === 'gemiddeld') {
+                state.currentQuestions = state.currentQuestions.slice(0, 7);
+            }
+            
+            // Voeg vaker gemiste vragen toe
+            addMistakeQuestions();
+            
+            // Toon gameScreen en verberg homeScreen
+            homeScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            // Toon eerste vraag
+            showQuestion();
+            
+            // Reset UI elementen
+            feedbackElement.className = 'feedback';
+            feedbackElement.textContent = '';
+            nextQuestionButton.classList.add('hidden');
+            backToHomeButton.classList.add('hidden');
+            correctCountElement.textContent = '0';
+            incorrectCountElement.textContent = '0';
+            updateProgressBar();
+            
+            // Focus op het antwoord invoerveld
+            setTimeout(() => answerInput.focus(), 100);
+        }
+
+        // Voeg vragen toe die vaker fout gedaan zijn
+        function addMistakeQuestions() {
+            if (!state.mistakeHistory[state.selectedCategory]) return;
+            
+            const allQuestions = werkwoordData[state.selectedCategory].questions;
+            const mistakeData = state.mistakeHistory[state.selectedCategory].mistakes || {};
+            
+            // Filter vragen met meer dan 2 fouten
+            allQuestions.forEach((question, index) => {
+                const questionId = `${state.selectedCategory}-${index}`;
+                if (mistakeData[questionId] && mistakeData[questionId] >= 2) {
+                    // Controleer of deze vraag niet al in currentQuestions zit
+                    const alreadyIncluded = state.currentQuestions.some(q => 
+                        q.question === question.question && q.answer === question.answer);
+                    
+                    if (!alreadyIncluded) {
+                        state.currentQuestions.push(question);
+                    }
+                }
+            });
+        }
+
+        // Toon huidige vraag
+        function showQuestion() {
+            if (state.currentQuestionIndex >= state.currentQuestions.length) {
+                endGame();
+                return;
+            }
+            
+            const currentQuestion = state.currentQuestions[state.currentQuestionIndex];
+            questionElement.textContent = currentQuestion.question;
+            answerInput.value = '';
+            answerInput.focus();
+            updateProgressBar();
+        }
+
+        // Update de voortgangsbalk
+        function updateProgressBar() {
+            const progress = (state.currentQuestionIndex / state.currentQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Verwerk het antwoord
+        answerForm.addEventListener('submit', event => {
+            event.preventDefault();
+            if (!state.gameActive) return;
+            
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const currentQuestion = state.currentQuestions[state.currentQuestionIndex];
+            const correctAnswer = currentQuestion.answer.toLowerCase();
+            
+            // Registreer het antwoord
+            if (userAnswer === correctAnswer) {
+                feedbackElement.className = 'feedback correct';
+                feedbackElement.textContent = `Correct! ${correctAnswer} is het juiste antwoord.`;
+                state.correctAnswers++;
+                correctCountElement.textContent = state.correctAnswers;
+                registerCorrectAnswer();
+            } else {
+                feedbackElement.className = 'feedback incorrect';
+                feedbackElement.textContent = `Helaas! Het juiste antwoord is: ${correctAnswer}`;
+                state.incorrectAnswers++;
+                incorrectCountElement.textContent = state.incorrectAnswers;
+                registerMistake();
+            }
+            
+            // Toon navigatie knoppen
+            nextQuestionButton.classList.remove('hidden');
+            
+            // Deactiveer het input veld
+            answerInput.disabled = true;
+            answerForm.querySelector('button').disabled = true;
+            
+            // Focus op de volgende-vraag knop
+            setTimeout(() => nextQuestionButton.focus(), 100);
+        });
+
+        // Registreer een correct antwoord
+        function registerCorrectAnswer() {
+            if (!state.mistakeHistory[state.selectedCategory]) {
+                state.mistakeHistory[state.selectedCategory] = { correct: 0, incorrect: 0, mistakes: {} };
+            }
+            state.mistakeHistory[state.selectedCategory].correct++;
+            saveProgress();
+        }
+
+        // Registreer een fout
+        function registerMistake() {
+            if (!state.mistakeHistory[state.selectedCategory]) {
+                state.mistakeHistory[state.selectedCategory] = { correct: 0, incorrect: 0, mistakes: {} };
+            }
+            
+            state.mistakeHistory[state.selectedCategory].incorrect++;
+            
+            const questionId = `${state.selectedCategory}-${state.currentQuestions[state.currentQuestionIndex].question}`;
+            if (!state.mistakeHistory[state.selectedCategory].mistakes) {
+                state.mistakeHistory[state.selectedCategory].mistakes = {};
+            }
+            
+            const mistakes = state.mistakeHistory[state.selectedCategory].mistakes;
+            mistakes[questionId] = (mistakes[questionId] || 0) + 1;
+            
+            saveProgress();
+        }
+
+        // Ga naar de volgende vraag
+        nextQuestionButton.addEventListener('click', () => {
+            state.currentQuestionIndex++;
+            answerInput.disabled = false;
+            answerForm.querySelector('button').disabled = false;
+            feedbackElement.className = 'feedback';
+            feedbackElement.textContent = '';
+            nextQuestionButton.classList.add('hidden');
+            showQuestion();
+            
+            // Focus op het invoerveld voor het volgende antwoord
+            setTimeout(() => answerInput.focus(), 100);
+        });
+
+        // Einde van het spel
+        function endGame() {
+            state.gameActive = false;
+            questionElement.textContent = 'Training voltooid!';
+            feedbackElement.className = 'feedback';
+            feedbackElement.textContent = '';
+            nextQuestionButton.classList.add('hidden');
+            backToHomeButton.classList.remove('hidden');
+            answerForm.classList.add('hidden');
+            
+            // Toon score
+            const totalQuestions = state.correctAnswers + state.incorrectAnswers;
+            const accuracy = totalQuestions > 0 ? Math.round((state.correctAnswers / totalQuestions) * 100) : 0;
+            
+            feedbackElement.className = 'feedback correct';
+            feedbackElement.textContent = `Je score: ${accuracy}% (${state.correctAnswers} van de ${totalQuestions} goed)`;
+        }
+
+        // Terug naar hoofdmenu vanuit het spel
+        document.getElementById('game-menu-button').addEventListener('click', () => {
+            if (confirm('Weet je zeker dat je terug wilt naar het hoofdmenu? Je voortgang in deze ronde wordt niet opgeslagen.')) {
+                gameScreen.classList.add('hidden');
+                homeScreen.classList.remove('hidden');
+                answerForm.classList.remove('hidden');
+                initializeCategories(); // Vernieuw categorieën met bijgewerkte scores
+            }
+        });
+
+        // Terug naar hoofdmenu
+        backToHomeButton.addEventListener('click', () => {
+            gameScreen.classList.add('hidden');
+            homeScreen.classList.remove('hidden');
+            answerForm.classList.remove('hidden');
+            initializeCategories(); // Vernieuw categorieën met bijgewerkte scores
+        });
+
+        // Hulpfunctie om array te shufflen
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Initialiseer de app
+        function initApp() {
+            loadProgress();
+            initializeCategories();
+        }
+
+        // Start de app
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html> 
