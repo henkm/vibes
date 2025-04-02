@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behangvisualisatie</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4cb9d6;
+            --light-color: #f5f5f5;
+            --dark-color: #333;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #f9f9f9;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .api-key-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .api-key-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .upload-box {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .upload-box:hover {
+            border-color: var(--accent-color);
+        }
+        
+        .upload-box h3 {
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .upload-box p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-box input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .preview-container {
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .result-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            margin: 2rem auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 4px;
+            background-color: rgba(231, 76, 60, 0.1);
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        .info-box {
+            background-color: rgba(74, 111, 165, 0.1);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Behangvisualisatie</h1>
+        <p>Upload foto's van je ruimte en behang om te zien hoe het eruit zal zien</p>
+    </header>
+    
+    <main class="container">
+        <div class="api-key-section">
+            <h3>OpenAI API Sleutel</h3>
+            <p>Voer je OpenAI API sleutel in om de behangvisualisatie te kunnen genereren</p>
+            <div class="info-box">
+                Je API sleutel wordt alleen lokaal in je browser gebruikt en wordt nergens opgeslagen.
+                <br>Je kunt een API sleutel krijgen op <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com/api-keys</a>
+            </div>
+            <input type="password" id="api-key" class="api-key-input" placeholder="sk-..." />
+        </div>
+        
+        <div class="upload-section">
+            <div class="upload-box" id="room-upload">
+                <h3>Upload ruimtefoto</h3>
+                <p>Een foto van de ruimte waar je behang wilt toepassen</p>
+                <input type="file" id="room-file" accept="image/*" />
+                <div class="preview-container">
+                    <img id="room-preview" class="preview-image" alt="Voorbeeld van ruimte" />
+                </div>
+            </div>
+            
+            <div class="upload-box" id="wallpaper-upload">
+                <h3>Upload behangfoto</h3>
+                <p>Een foto van het behang dat je wilt gebruiken</p>
+                <input type="file" id="wallpaper-file" accept="image/*" />
+                <div class="preview-container">
+                    <img id="wallpaper-preview" class="preview-image" alt="Voorbeeld van behang" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button id="visualize-button" disabled>Visualiseer behang</button>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        
+        <div class="loading-spinner" id="loading-spinner"></div>
+        
+        <div class="result-section">
+            <h2>Resultaat</h2>
+            <p>Zo ziet je ruimte eruit met het nieuwe behang:</p>
+            <img id="result-image" class="result-image" alt="Resultaat met behang" />
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <p>Deze applicatie gebruikt OpenAI's DALL-E 3 API om fotorealistische visualisaties te genereren.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementen ophalen
+            const apiKeyInput = document.getElementById('api-key');
+            const roomFileInput = document.getElementById('room-file');
+            const wallpaperFileInput = document.getElementById('wallpaper-file');
+            const roomPreview = document.getElementById('room-preview');
+            const wallpaperPreview = document.getElementById('wallpaper-preview');
+            const visualizeButton = document.getElementById('visualize-button');
+            const resultImage = document.getElementById('result-image');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Bestand upload voor ruimte
+            roomFileInput.addEventListener('change', function(e) {
+                previewImage(e.target.files[0], roomPreview);
+                checkEnableButton();
+            });
+            
+            // Bestand upload voor behang
+            wallpaperFileInput.addEventListener('change', function(e) {
+                previewImage(e.target.files[0], wallpaperPreview);
+                checkEnableButton();
+            });
+            
+            // API sleutel input
+            apiKeyInput.addEventListener('input', checkEnableButton);
+            
+            // Functie om voorbeeldafbeelding weer te geven
+            function previewImage(file, previewElement) {
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewElement.src = e.target.result;
+                        previewElement.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            // Controleer of alle vereiste velden zijn ingevuld om knop te activeren
+            function checkEnableButton() {
+                if (apiKeyInput.value.trim() && 
+                    roomFileInput.files.length > 0 && 
+                    wallpaperFileInput.files.length > 0) {
+                    visualizeButton.disabled = false;
+                } else {
+                    visualizeButton.disabled = true;
+                }
+            }
+            
+            // Verwerk de visualisatie wanneer op de knop wordt gedrukt
+            visualizeButton.addEventListener('click', async function() {
+                // Reset eventuele eerdere foutmeldingen
+                errorMessage.style.display = 'none';
+                errorMessage.textContent = '';
+                
+                // Toon laadspinner
+                loadingSpinner.style.display = 'block';
+                resultImage.style.display = 'none';
+                
+                try {
+                    // Lees beide afbeeldingsbestanden in
+                    const roomImageBase64 = await fileToBase64(roomFileInput.files[0]);
+                    const wallpaperImageBase64 = await fileToBase64(wallpaperFileInput.files[0]);
+                    
+                    // OpenAI API aanroepen
+                    const result = await callOpenAI(apiKeyInput.value, roomImageBase64, wallpaperImageBase64);
+                    
+                    // Toon resultaat
+                    resultImage.src = result;
+                    resultImage.style.display = 'block';
+                } catch (error) {
+                    console.error('Fout bij visualisatie:', error);
+                    let errorMsg = 'Er is een fout opgetreden bij het verwerken van je aanvraag.';
+                    
+                    if (error.message.includes('API sleutel')) {
+                        errorMsg = error.message;
+                    } else if (error.message.includes('429')) {
+                        errorMsg = 'De API limiet is bereikt. Probeer het later opnieuw.';
+                    } else if (error.message.includes('401')) {
+                        errorMsg = 'Ongeldige API sleutel. Controleer je sleutel en probeer opnieuw.';
+                    }
+                    
+                    errorMessage.textContent = errorMsg;
+                    errorMessage.style.display = 'block';
+                } finally {
+                    // Verberg laadspinner
+                    loadingSpinner.style.display = 'none';
+                }
+            });
+            
+            // Hulpfunctie om bestand naar base64 te converteren
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            // Functie om OpenAI API direct aan te roepen
+            async function callOpenAI(apiKey, roomImage, wallpaperImage) {
+                if (!apiKey || !apiKey.startsWith('sk-')) {
+                    throw new Error('Ongeldige API sleutel. Zorg dat je een geldige OpenAI API sleutel invoert.');
+                }
+                
+                // Bouw de prompt
+                const prompt = `Maak een fotorealistische visualisatie van een kamer met nieuw behang. 
+                De kamer moet EXACT IDENTIEK blijven aan de originele foto, alleen de muren moeten bedekt worden met het nieuwe behangpatroon.
+                Behoud alle meubels, ramen, deuren, verlichting en andere elementen precies zoals ze zijn. 
+                Pas het behangpatroon op een realistische manier toe, rekening houdend met schaduwen, licht en perspectief.
+                Het eindresultaat moet er 100% natuurlijk en fotorealistisch uitzien, alsof de kamer echt is behangen met dit nieuwe patroon.`;
+                
+                // OpenAI API aanroepen
+                const response = await fetch('https://api.openai.com/v1/images/generations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "dall-e-3",
+                        prompt: prompt,
+                        n: 1,
+                        size: "1024x1024",
+                        quality: "hd",
+                        response_format: "b64_json",
+                        style: "natural"
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('OpenAI API fout:', errorData);
+                    throw new Error(`API fout: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return `data:image/jpeg;base64,${data.data[0].b64_json}`;
+            }
+        });
+    </script>
+</body>
+</html> 
