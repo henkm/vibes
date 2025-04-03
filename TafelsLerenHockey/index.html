@@ -49,11 +49,12 @@
             width: 4px;
             background-color: #e74c3c;
             transform: translateX(-50%);
+            pointer-events: none;
         }
 
         /* Voeg cirkels toe */
         #table::after {
-            content: '';
+            content: '↺';
             position: absolute;
             left: 50%;
             top: 50%;
@@ -64,21 +65,15 @@
             transform: translate(-50%, -50%);
             cursor: pointer;
             transition: all 0.2s ease;
+            font-size: 2em;
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #table::after:hover {
             background-color: rgba(231, 76, 60, 0.1);
-        }
-
-        #table::before {
-            content: '↺';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2em;
-            color: #e74c3c;
-            pointer-events: none;
         }
 
         .goal {
@@ -269,8 +264,20 @@
             font-family: 'Press Start 2P', cursive;
         }
 
-        #score.player2 {
+        #score2 {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
             transform: translateX(-50%) rotate(180deg);
+            color: #2c3e50;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            background-color: rgba(255,255,255,0.9);
+            padding: 10px 30px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-family: 'Press Start 2P', cursive;
         }
 
         @media screen and (orientation: portrait) {
@@ -291,6 +298,7 @@
                 <div id="question" class="player2"></div>
             </div>
             <div id="score">0 - 0</div>
+            <div id="score2">0 - 0</div>
         </div>
         <div id="player1-input" class="player-input">
             <input type="number" id="player1-answer" placeholder="Jouw antwoord" readonly>
@@ -474,6 +482,8 @@
             const scoreElement = document.getElementById('score');
             scoreElement.textContent = `${score.player1} - ${score.player2}`;
             scoreElement.classList.add('player2'); // Voeg class toe voor speler 2
+            const scoreElement2 = document.getElementById('score2');
+            scoreElement2.textContent = `${score.player1} - ${score.player2}`;
         }
 
         // Numerieke input verwerken
@@ -505,11 +515,48 @@
             updateScore();
             updatePuckPosition();
             generateNewQuestion();
+            
+            // Reset input velden
+            document.getElementById('player1-answer').value = '';
+            document.getElementById('player2-answer').value = '';
+            
+            // Visuele feedback dat de reset is uitgevoerd
+            const table = document.getElementById('table');
+            const resetFeedback = document.createElement('div');
+            resetFeedback.style.cssText = `
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                background-color: rgba(231, 76, 60, 0.2);
+                border-radius: 50%;
+                width: 100px;
+                height: 100px;
+                animation: pulse 0.5s ease-out;
+                pointer-events: none;
+            `;
+            
+            table.appendChild(resetFeedback);
+            
+            setTimeout(() => {
+                table.removeChild(resetFeedback);
+            }, 500);
         }
 
         // Reset knop toevoegen aan middencirkel
         document.addEventListener('DOMContentLoaded', function() {
             const table = document.getElementById('table');
+            
+            // Voeg CSS animatie toe
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+                    100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
             table.addEventListener('click', function(e) {
                 const rect = table.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
@@ -519,7 +566,7 @@
                     Math.pow(e.clientY - centerY, 2)
                 );
                 
-                if (distance < 50) { // 50px radius
+                if (distance < 60) { // Iets grotere radius voor betere clickability
                     resetGame();
                 }
             });
