@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kamertje Verhuren</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Kamertje Verhuren</h1>
+        
+        <div class="game-info">
+            <div class="score-container">
+                <div class="player player1">
+                    <span class="player-name">Speler 1</span>
+                    <span class="player-score">0</span>
+                </div>
+                <div class="player player2">
+                    <span class="player-name">Speler 2</span>
+                    <span class="player-score">0</span>
+                </div>
+            </div>
+            <div class="current-player">
+                Speler 1 is aan de beurt
+            </div>
+        </div>
+        
+        <div class="game-size-selector">
+            <label for="grid-size">Selecteer grootte:</label>
+            <select id="grid-size">
+                <option value="3">3x3 (2x2 vakjes)</option>
+                <option value="4" selected>4x4 (3x3 vakjes)</option>
+                <option value="5">5x5 (4x4 vakjes)</option>
+                <option value="6">6x6 (5x5 vakjes)</option>
+                <option value="10">10x10 (9x9 vakjes)</option>
+            </select>
+            <button id="new-game-btn">Nieuw Spel</button>
+        </div>
+
+        <div class="game-board-container">
+            <canvas id="game-board"></canvas>
+        </div>
+        
+        <div class="game-controls">
+            <button id="restart-btn">Herstarten</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
