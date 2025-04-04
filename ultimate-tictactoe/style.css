@@ -1,0 +1,281 @@
+:root {
+    --primary-color: #ff85a2; /* Roze */
+    --secondary-color: #57cc99; /* Groen */
+    --accent-color: #ffd166; /* Geel */
+    --background-color: #f8f9fa;
+    --cell-hover: #e9ecef;
+    --light-color: #ffffff;
+    --dark-color: #495057;
+    --board-border: #ced4da;
+    --player-x: #ff85a2; /* Roze voor speler X (bloem) */
+    --player-o: #ffd166; /* Geel voor speler O (bloem) */
+    --active-board: #c7f9cc; /* Lichtgroen voor actief bord */
+    --won-board-x: rgba(255, 133, 162, 0.3); /* Transparant roze */
+    --won-board-o: rgba(255, 209, 102, 0.3); /* Transparant geel */
+    --drawn-board: rgba(73, 80, 87, 0.1); /* Transparant grijs */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-color);
+    background-color: var(--background-color);
+    background-image: url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23f0f4f8" fill-opacity="0.4"><path d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/></g></g></svg>');
+    padding: 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--light-color);
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background-image: url('data:image/svg+xml;utf8,<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g fill="%23f9f9f9" fill-opacity="0.4"><path d="M15 0C16.65 0 18 1.35 18 3C18 4.65 16.65 6 15 6C13.35 6 12 4.65 12 3C12 1.35 13.35 0 15 0ZM15 12C16.65 12 18 13.35 18 15C18 16.65 16.65 18 15 18C13.35 18 12 16.65 12 15C12 13.35 13.35 12 15 12ZM15 24C16.65 24 18 25.35 18 27C18 28.65 16.65 30 15 30C13.35 30 12 28.65 12 27C12 25.35 13.35 24 15 24Z"/></g></svg>');
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+    color: var(--dark-color);
+    font-size: 1.1rem;
+}
+
+.game-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a87e;
+}
+
+.player-info {
+    display: flex;
+    gap: 20px;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: #f0f4f8;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.player.active {
+    opacity: 1;
+    font-weight: bold;
+}
+
+#player-x.active {
+    box-shadow: 0 0 0 2px var(--player-x);
+}
+
+#player-o.active {
+    box-shadow: 0 0 0 2px var(--player-o);
+}
+
+.player-symbol {
+    font-size: 1.5rem;
+}
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 15px;
+    max-width: 100%;
+    width: 100%;
+    background-color: var(--board-border);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    aspect-ratio: 1;
+    max-height: calc(100vh - 300px);
+    min-height: 500px;
+}
+
+@media (max-width: 768px) {
+    .game-board {
+        min-height: auto;
+        aspect-ratio: 1;
+    }
+}
+
+.big-cell {
+    background: var(--light-color);
+    border-radius: 8px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 7px;
+    aspect-ratio: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.big-cell.active {
+    background-color: var(--active-board);
+}
+
+.big-cell.won-x {
+    background-color: var(--won-board-x);
+}
+
+.big-cell.won-o {
+    background-color: var(--won-board-o);
+}
+
+.big-cell.draw {
+    background-color: var(--drawn-board);
+}
+
+.small-cell {
+    background: var(--light-color);
+    border-radius: 6px;
+    border: 1px solid var(--board-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    aspect-ratio: 1;
+    min-height: 45px;
+}
+
+.small-cell:hover {
+    background-color: var(--cell-hover);
+}
+
+.small-cell.disabled {
+    cursor: not-allowed;
+}
+
+.small-cell.x {
+    color: var(--player-x);
+}
+
+.small-cell.o {
+    color: var(--player-o);
+}
+
+/* Bloemen in plaats van X en O */
+.small-cell.x::before {
+    content: "🌹";
+}
+
+.small-cell.o::before {
+    content: "🌻";
+}
+
+.big-cell.won-x::after {
+    content: "🌹";
+    font-size: 4rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.big-cell.won-o::after {
+    content: "🌻";
+    font-size: 4rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.big-cell {
+    position: relative;
+}
+
+.game-status {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #f0f4f8;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.game-status p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--dark-color);
+}
+
+.game-instructions {
+    background-color: #f0f4f8;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.game-instructions h2 {
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.game-instructions ul {
+    list-style-position: inside;
+    margin-left: 10px;
+}
+
+.game-instructions li {
+    margin-bottom: 8px;
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #6c757d;
+} 

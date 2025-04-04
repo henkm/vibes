@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Tic-Tac-Toe | Bloemenversie</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ultimate Tic-Tac-Toe</h1>
+            <p class="subtitle">Speel het klassieke Tic-Tac-Toe op een nieuw niveau!</p>
+        </header>
+
+        <div class="game-controls">
+            <button id="restart-btn">Nieuw Spel</button>
+            <div class="player-info">
+                <div class="player" id="player-x">
+                    <span class="player-symbol">🌹</span>
+                    <span class="player-name">Speler 1</span>
+                </div>
+                <div class="player" id="player-o">
+                    <span class="player-symbol">🌻</span>
+                    <span class="player-name">Speler 2</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div id="game-board" class="game-board">
+                <!-- Het bord wordt dynamisch gegenereerd met JavaScript -->
+            </div>
+        </div>
+
+        <div class="game-status">
+            <p id="status-message">Speler 1 (🌹) begint het spel!</p>
+        </div>
+
+        <div class="game-instructions">
+            <h2>Spelregels</h2>
+            <ul>
+                <li>Het spel bestaat uit 9 kleine Tic-Tac-Toe borden in een 3x3 raster.</li>
+                <li>De eerste zet mag overal. Daarna moet je spelen in het bord dat overeenkomt met de positie van de vorige zet.</li>
+                <li>Als je naar een vol of gewonnen bord wordt gestuurd, mag je in elk ander bord spelen.</li>
+                <li>Win 3 kleine bordjes op een rij om het hele spel te winnen!</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Vibe Coding Projecten</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
