@@ -30,8 +30,8 @@ function resizeCanvas() {
 class Player {
     constructor(canvas) {
         this.canvas = canvas;
-        this.width = canvas.width * 0.1;
-        this.height = canvas.width * 0.1;
+        this.width = canvas.width * 0.3;
+        this.height = canvas.width * 0.3;
         this.x = canvas.width * 0.2;
         this.y = canvas.height / 2;
         this.velocity = 0;
@@ -91,7 +91,21 @@ class Obstacle {
         
         // Willekeurige hoogte en opening voor het obstakel
         this.gapHeight = canvas.height * 0.35;
-        this.gapPosition = Math.random() * (canvas.height - this.gapHeight - 100) + 50;
+        
+        // Meer variatie in de posities van de openingen
+        // Verdeel in drie mogelijke hoogtegebieden: hoog, midden, laag
+        const positionType = Math.floor(Math.random() * 3);
+        
+        if (positionType === 0) {
+            // Hoge opening
+            this.gapPosition = Math.random() * (canvas.height * 0.3) + 20;
+        } else if (positionType === 1) {
+            // Middenopening
+            this.gapPosition = Math.random() * (canvas.height * 0.3) + canvas.height * 0.35;
+        } else {
+            // Lage opening
+            this.gapPosition = Math.random() * (canvas.height * 0.3) + canvas.height * 0.65;
+        }
         
         // Afbeeldingen voor boven- en onderdeel
         this.topImage = new Image();
@@ -132,20 +146,23 @@ class Obstacle {
     }
 
     checkCollision(playerBounds) {
-        // Bovenste obstakel controleren
+        // Marge toevoegen voor nauwkeurigere botsdetectie
+        const hitboxMargin = 10; // Pixels marge voor betere botsdetectie
+        
+        // Bovenste obstakel controleren - met nauwkeurigere hitbox
         if (
-            playerBounds.x + playerBounds.width > this.x &&
-            playerBounds.x < this.x + this.width &&
-            playerBounds.y < this.gapPosition
+            playerBounds.x + playerBounds.width - hitboxMargin > this.x &&
+            playerBounds.x + hitboxMargin < this.x + this.width &&
+            playerBounds.y + hitboxMargin < this.gapPosition
         ) {
             return true;
         }
         
-        // Onderste obstakel controleren
+        // Onderste obstakel controleren - met nauwkeurigere hitbox
         if (
-            playerBounds.x + playerBounds.width > this.x &&
-            playerBounds.x < this.x + this.width &&
-            playerBounds.y + playerBounds.height > this.gapPosition + this.gapHeight
+            playerBounds.x + playerBounds.width - hitboxMargin > this.x &&
+            playerBounds.x + hitboxMargin < this.x + this.width &&
+            playerBounds.y + playerBounds.height - hitboxMargin > this.gapPosition + this.gapHeight
         ) {
             return true;
         }
