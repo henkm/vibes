@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gymzaal Springer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div id="game-intro" class="screen">
+            <h1>Gymzaal Springer</h1>
+            <p>Spring over de obstakels in de gymzaal!</p>
+            <button id="start-button">Start Spel</button>
+            <div class="instructions">
+                <p>Druk op SPATIE of tik op het scherm om te springen</p>
+            </div>
+        </div>
+
+        <div id="game-canvas-container" class="screen hidden">
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <div id="game-over" class="screen hidden">
+            <h2>Game Over!</h2>
+            <p>Je score: <span id="final-score">0</span></p>
+            <p>Hoogste score: <span id="high-score">0</span></p>
+            <button id="restart-button">Opnieuw Spelen</button>
+            <button id="home-button">Terug naar Home</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

@@ -1,0 +1,133 @@
+/* Basis stijlen */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 9/16;
+    position: relative;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* Scherm stijlen */
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Intro scherm */
+#game-intro h1 {
+    font-size: 2.5rem;
+    color: #3c6e71;
+    margin-bottom: 1rem;
+}
+
+.instructions {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f0f4f5;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Canvas container */
+#game-canvas-container {
+    padding: 0;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    background-color: #80b0c5;
+}
+
+.score-display {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 10;
+}
+
+/* Game over scherm */
+#game-over {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+#game-over h2 {
+    font-size: 2.2rem;
+    color: #e63946;
+    margin-bottom: 1.5rem;
+}
+
+/* Knoppen */
+button {
+    background-color: #3c6e71;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #274c4f;
+}
+
+#restart-button, #home-button {
+    min-width: 200px;
+}
+
+/* Responsive aanpassingen */
+@media (max-height: 700px) {
+    .game-container {
+        max-width: 350px;
+    }
+    
+    #game-intro h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .game-container {
+        border-radius: 0;
+        height: 100vh;
+        max-width: 100%;
+    }
+} 
