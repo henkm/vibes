@@ -26,15 +26,35 @@
             </div>
         </div>
         
-        <div class="game-size-selector">
-            <label for="grid-size">Selecteer grootte:</label>
-            <select id="grid-size">
-                <option value="3">3x3 (2x2 vakjes)</option>
-                <option value="4" selected>4x4 (3x3 vakjes)</option>
-                <option value="5">5x5 (4x4 vakjes)</option>
-                <option value="6">6x6 (5x5 vakjes)</option>
-                <option value="10">10x10 (9x9 vakjes)</option>
-            </select>
+        <div class="game-settings">
+            <div class="game-mode-selector">
+                <label for="game-mode">Spelmodus:</label>
+                <select id="game-mode">
+                    <option value="two-player" selected>Twee spelers</option>
+                    <option value="single-player">Eén speler (tegen computer)</option>
+                </select>
+            </div>
+            
+            <div class="game-size-selector">
+                <label for="grid-size">Selecteer grootte:</label>
+                <select id="grid-size">
+                    <option value="3">3x3 (2x2 vakjes)</option>
+                    <option value="4" selected>4x4 (3x3 vakjes)</option>
+                    <option value="5">5x5 (4x4 vakjes)</option>
+                    <option value="6">6x6 (5x5 vakjes)</option>
+                    <option value="10">10x10 (9x9 vakjes)</option>
+                </select>
+            </div>
+            
+            <div class="ai-difficulty" style="display: none;">
+                <label for="ai-level">Computer niveau:</label>
+                <select id="ai-level">
+                    <option value="easy">Makkelijk</option>
+                    <option value="medium" selected>Gemiddeld</option>
+                    <option value="hard">Moeilijk</option>
+                </select>
+            </div>
+            
             <button id="new-game-btn">Nieuw Spel</button>
         </div>
 

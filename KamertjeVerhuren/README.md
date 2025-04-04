@@ -13,6 +13,8 @@ Een digitale versie van het klassieke spelletje "Kamertje Verhuren" (in het Enge
 ## Kenmerken
 
 - Verschillende rastergroottes (2x2 tot 9x9 vakjes, inclusief een uitdagend 10x10 raster)
+- Single-player modus met computergestuurde tegenstander
+- Meerdere moeilijkheidsgraden voor de AI (makkelijk, gemiddeld, moeilijk)
 - Speciaal ontworpen voor touch-apparaten, zoals iPads
 - Duidelijke visuele feedback
 - Automatische score bijhouding
@@ -20,11 +22,13 @@ Een digitale versie van het klassieke spelletje "Kamertje Verhuren" (in het Enge
 
 ## Hoe te spelen
 
-1. Kies een rastergrootte in het dropdown menu
-2. Klik of tik op "Nieuw Spel" om te beginnen
-3. Trek een lijn door van één punt naar een aangrenzend punt te slepen
-4. Vul vakjes om punten te scoren
-5. De speler met de meeste punten wint!
+1. Kies de spelmodus (één speler of twee spelers)
+2. Als je in single-player modus speelt, kies het gewenste AI-niveau
+3. Kies een rastergrootte in het dropdown menu
+4. Klik of tik op "Nieuw Spel" om te beginnen
+5. Trek een lijn door van één punt naar een aangrenzend punt te slepen
+6. Vul vakjes om punten te scoren
+7. De speler met de meeste punten wint!
 
 ## Strategietip
 

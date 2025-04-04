@@ -5,10 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // UI-elementen
     const gridSizeSelect = document.getElementById('grid-size');
+    const gameModeSelect = document.getElementById('game-mode');
+    const aiLevelSelect = document.getElementById('ai-level');
+    const aiDifficultyDiv = document.querySelector('.ai-difficulty');
     const newGameBtn = document.getElementById('new-game-btn');
     const restartBtn = document.getElementById('restart-btn');
     const player1ScoreElement = document.querySelector('.player1 .player-score');
     const player2ScoreElement = document.querySelector('.player2 .player-score');
+    const player2NameElement = document.querySelector('.player2 .player-name');
     const currentPlayerElement = document.querySelector('.current-player');
     
     // Spelconfiguratie
@@ -19,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPlayer = 1;
     let player1Score = 0;
     let player2Score = 0;
+    let isSinglePlayer = false;
+    let aiLevel = 'medium';
+    let isAiTurn = false;
+    let gameActive = true;
     
     // Kleuren
     const player1Color = '#3498db';
@@ -37,6 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDragging = false;
     let startDot = null;
     let lastHoverLine = null;
+    
+    // Event listener voor het tonen/verbergen van AI-moeilijkheidsgraad
+    gameModeSelect.addEventListener('change', () => {
+        isSinglePlayer = gameModeSelect.value === 'single-player';
+        aiDifficultyDiv.style.display = isSinglePlayer ? 'flex' : 'none';
+        
+        // Update speler 2 naam
+        player2NameElement.textContent = isSinglePlayer ? 'Computer' : 'Speler 2';
+    });
     
     // Canvas resize helpers
     function resizeCanvas() {
@@ -61,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialisatie van het spel
     function initGame() {
         gridSize = parseInt(gridSizeSelect.value);
+        isSinglePlayer = gameModeSelect.value === 'single-player';
+        aiLevel = aiLevelSelect.value;
+        gameActive = true;
         
         // Arrays initialiseren
         horizontalLines = Array(gridSize).fill().map(() => Array(gridSize - 1).fill(0));
@@ -75,7 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Huidige speler resetten
         currentPlayer = 1;
+        isAiTurn = false;
         updateCurrentPlayerDisplay();
+        
+        // Update speler 2 naam
+        player2NameElement.textContent = isSinglePlayer ? 'Computer' : 'Speler 2';
         
         // Canvas aanpassen
         resizeCanvas();
@@ -83,7 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Update de weergave van de huidige speler
     function updateCurrentPlayerDisplay() {
-        currentPlayerElement.textContent = `Speler ${currentPlayer} is aan de beurt`;
+        if (isSinglePlayer && currentPlayer === 2) {
+            currentPlayerElement.textContent = isAiTurn ? 'Computer denkt na...' : 'Computer is aan de beurt';
+        } else {
+            currentPlayerElement.textContent = `Speler ${currentPlayer} is aan de beurt`;
+        }
+        
         if (currentPlayer === 1) {
             currentPlayerElement.style.color = player1Color;
         } else {
@@ -182,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(
-                            boxes[i][j] === 1 ? 'S1' : 'S2', 
+                            boxes[i][j] === 1 ? 'S1' : isSinglePlayer ? 'PC' : 'S2', 
                             x + size / 2, 
                             y + size / 2
                         );
@@ -349,6 +378,17 @@ document.addEventListener('DOMContentLoaded', () => {
         player1ScoreElement.textContent = player1Score;
         player2ScoreElement.textContent = player2Score;
         
+        // Toon een bericht als een vakje voltooid is
+        if (boxCompleted) {
+            if (currentPlayer === 1) {
+                currentPlayerElement.textContent = "Speler 1 heeft een vakje voltooid! Extra beurt!";
+            } else if (isSinglePlayer) {
+                currentPlayerElement.textContent = "Computer heeft een vakje voltooid! Extra beurt!";
+            } else {
+                currentPlayerElement.textContent = "Speler 2 heeft een vakje voltooid! Extra beurt!";
+            }
+        }
+        
         return boxCompleted;
     }
     
@@ -360,12 +400,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (player1Score > player2Score) {
                 message = 'Speler 1 wint!';
             } else if (player2Score > player1Score) {
-                message = 'Speler 2 wint!';
+                message = isSinglePlayer ? 'Computer wint!' : 'Speler 2 wint!';
             } else {
                 message = 'Gelijkspel!';
             }
             
             currentPlayerElement.textContent = message;
+            gameActive = false;
             return true;
         }
         return false;
@@ -373,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Teken een lijn tussen twee stippen
     function drawLine(dot1, dot2) {
-        if (!dot1 || !dot2) return false;
+        if (!dot1 || !dot2 || !gameActive) return false;
         
         // Controleer of de stippen aangrenzend zijn
         const rowDiff = Math.abs(dot1.row - dot2.row);
@@ -401,6 +442,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Wissel speler als er geen vakje voltooid is
                     currentPlayer = currentPlayer === 1 ? 2 : 1;
                     updateCurrentPlayerDisplay();
+                    
+                    // Als het de beurt is van de AI in single-player modus
+                    if (isSinglePlayer && currentPlayer === 2 && gameActive) {
+                        isAiTurn = true;
+                        // Kort vertraging voordat de AI een zet doet
+                        setTimeout(() => {
+                            makeAiMove();
+                            isAiTurn = false;
+                        }, 500);
+                    }
+                } else {
+                    // Als een vakje is voltooid, blijft de huidige speler aan de beurt
+                    // Als de AI een vakje heeft voltooid, laat de AI nog een zet doen
+                    if (isSinglePlayer && currentPlayer === 2 && gameActive) {
+                        isAiTurn = true;
+                        // Kort vertraging voordat de AI opnieuw een zet doet
+                        setTimeout(() => {
+                            makeAiMove();
+                            isAiTurn = false;
+                        }, 500);
+                    }
                 }
                 
                 // Controleer of het spel voltooid is
@@ -413,8 +475,271 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
     
+    // AI-zet maken
+    function makeAiMove() {
+        if (!gameActive) {
+            isAiTurn = false;
+            return;
+        }
+        
+        // Zoek eerst een zet die een vakje kan voltooien
+        const completeBoxMove = findMoveToCompleteBox();
+        if (completeBoxMove) {
+            drawLine(
+                { row: completeBoxMove.dot1.row, col: completeBoxMove.dot1.col, x: 0, y: 0 },
+                { row: completeBoxMove.dot2.row, col: completeBoxMove.dot2.col, x: 0, y: 0 }
+            );
+            return;
+        }
+        
+        // Zoek een veilige zet op basis van moeilijkheidsgraad
+        switch(aiLevel) {
+            case 'easy':
+                // Op eenvoudig niveau: kies een willekeurige zet
+                makeRandomAiMove();
+                break;
+            case 'medium':
+                // Op gemiddeld niveau: vermijd meestal zetten die een vakje opzetten voor voltooiing
+                if (Math.random() < 0.7) {
+                    makeSmartAiMove();
+                } else {
+                    makeRandomAiMove();
+                }
+                break;
+            case 'hard':
+                // Op moeilijk niveau: vermijd bijna altijd zetten die een vakje opzetten voor voltooiing
+                if (Math.random() < 0.9) {
+                    makeSmartAiMove();
+                } else {
+                    makeRandomAiMove();
+                }
+                break;
+        }
+    }
+    
+    // Vind een zet die een vakje compleet maakt
+    function findMoveToCompleteBox() {
+        // Controleer horizontale lijnen
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize - 1; j++) {
+                if (horizontalLines[i][j] === 0) {
+                    // Zet tijdelijk deze lijn
+                    horizontalLines[i][j] = 2;
+                    
+                    // Controleer of het een vakje zou voltooien
+                    const dot1 = { row: i, col: j };
+                    const dot2 = { row: i, col: j + 1 };
+                    let wouldCompleteBox = false;
+                    
+                    // Controleer vakje boven
+                    if (i > 0) {
+                        if (horizontalLines[i - 1][j] !== 0 && 
+                            verticalLines[i - 1][j] !== 0 && 
+                            verticalLines[i - 1][j + 1] !== 0) {
+                            wouldCompleteBox = true;
+                        }
+                    }
+                    
+                    // Controleer vakje onder
+                    if (i < gridSize - 1) {
+                        if (horizontalLines[i + 1][j] !== 0 && 
+                            verticalLines[i][j] !== 0 && 
+                            verticalLines[i][j + 1] !== 0) {
+                            wouldCompleteBox = true;
+                        }
+                    }
+                    
+                    // Ongedaan maken van de tijdelijke zet
+                    horizontalLines[i][j] = 0;
+                    
+                    if (wouldCompleteBox) {
+                        return { dot1, dot2 };
+                    }
+                }
+            }
+        }
+        
+        // Controleer verticale lijnen
+        for (let i = 0; i < gridSize - 1; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (verticalLines[i][j] === 0) {
+                    // Zet tijdelijk deze lijn
+                    verticalLines[i][j] = 2;
+                    
+                    // Controleer of het een vakje zou voltooien
+                    const dot1 = { row: i, col: j };
+                    const dot2 = { row: i + 1, col: j };
+                    let wouldCompleteBox = false;
+                    
+                    // Controleer vakje links
+                    if (j > 0) {
+                        if (verticalLines[i][j - 1] !== 0 && 
+                            horizontalLines[i][j - 1] !== 0 && 
+                            horizontalLines[i + 1][j - 1] !== 0) {
+                            wouldCompleteBox = true;
+                        }
+                    }
+                    
+                    // Controleer vakje rechts
+                    if (j < gridSize - 1) {
+                        if (verticalLines[i][j + 1] !== 0 && 
+                            horizontalLines[i][j] !== 0 && 
+                            horizontalLines[i + 1][j] !== 0) {
+                            wouldCompleteBox = true;
+                        }
+                    }
+                    
+                    // Ongedaan maken van de tijdelijke zet
+                    verticalLines[i][j] = 0;
+                    
+                    if (wouldCompleteBox) {
+                        return { dot1, dot2 };
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    // Vind en vermijd zetten die leiden tot een gemakkelijke voltooiing
+    function makeSmartAiMove() {
+        const possibleMoves = [];
+        const riskyMoves = [];
+        
+        // Verzamel alle mogelijke zetten
+        // Horizontale lijnen
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize - 1; j++) {
+                if (horizontalLines[i][j] === 0) {
+                    const dot1 = { row: i, col: j, x: 0, y: 0 };
+                    const dot2 = { row: i, col: j + 1, x: 0, y: 0 };
+                    
+                    let isRisky = false;
+                    
+                    // Controleer of deze zet leidt tot een situatie met 3 lijnen van een vakje
+                    // Controleer vakje boven
+                    if (i > 0) {
+                        let linesDrawn = 0;
+                        if (horizontalLines[i - 1][j] !== 0) linesDrawn++;
+                        if (verticalLines[i - 1][j] !== 0) linesDrawn++;
+                        if (verticalLines[i - 1][j + 1] !== 0) linesDrawn++;
+                        
+                        if (linesDrawn === 2) isRisky = true;
+                    }
+                    
+                    // Controleer vakje onder
+                    if (i < gridSize - 1) {
+                        let linesDrawn = 0;
+                        if (horizontalLines[i + 1][j] !== 0) linesDrawn++;
+                        if (verticalLines[i][j] !== 0) linesDrawn++;
+                        if (verticalLines[i][j + 1] !== 0) linesDrawn++;
+                        
+                        if (linesDrawn === 2) isRisky = true;
+                    }
+                    
+                    if (isRisky) {
+                        riskyMoves.push({ dot1, dot2 });
+                    } else {
+                        possibleMoves.push({ dot1, dot2 });
+                    }
+                }
+            }
+        }
+        
+        // Verticale lijnen
+        for (let i = 0; i < gridSize - 1; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (verticalLines[i][j] === 0) {
+                    const dot1 = { row: i, col: j, x: 0, y: 0 };
+                    const dot2 = { row: i + 1, col: j, x: 0, y: 0 };
+                    
+                    let isRisky = false;
+                    
+                    // Controleer vakje links
+                    if (j > 0) {
+                        let linesDrawn = 0;
+                        if (verticalLines[i][j - 1] !== 0) linesDrawn++;
+                        if (horizontalLines[i][j - 1] !== 0) linesDrawn++;
+                        if (horizontalLines[i + 1][j - 1] !== 0) linesDrawn++;
+                        
+                        if (linesDrawn === 2) isRisky = true;
+                    }
+                    
+                    // Controleer vakje rechts
+                    if (j < gridSize - 1) {
+                        let linesDrawn = 0;
+                        if (verticalLines[i][j + 1] !== 0) linesDrawn++;
+                        if (horizontalLines[i][j] !== 0) linesDrawn++;
+                        if (horizontalLines[i + 1][j] !== 0) linesDrawn++;
+                        
+                        if (linesDrawn === 2) isRisky = true;
+                    }
+                    
+                    if (isRisky) {
+                        riskyMoves.push({ dot1, dot2 });
+                    } else {
+                        possibleMoves.push({ dot1, dot2 });
+                    }
+                }
+            }
+        }
+        
+        let selectedMove;
+        
+        // Kies bij voorkeur een niet-riskante zet
+        if (possibleMoves.length > 0) {
+            selectedMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+        } else if (riskyMoves.length > 0) {
+            // Als er geen veilige zetten zijn, kies dan een riskante
+            selectedMove = riskyMoves[Math.floor(Math.random() * riskyMoves.length)];
+        } else {
+            // Geen zetten beschikbaar (zou niet moeten gebeuren)
+            return;
+        }
+        
+        drawLine(selectedMove.dot1, selectedMove.dot2);
+    }
+    
+    // Willekeurige AI-zet maken
+    function makeRandomAiMove() {
+        const availableMoves = [];
+        
+        // Verzamel alle mogelijke zetten
+        // Horizontale lijnen
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize - 1; j++) {
+                if (horizontalLines[i][j] === 0) {
+                    availableMoves.push({
+                        dot1: { row: i, col: j, x: 0, y: 0 },
+                        dot2: { row: i, col: j + 1, x: 0, y: 0 }
+                    });
+                }
+            }
+        }
+        
+        // Verticale lijnen
+        for (let i = 0; i < gridSize - 1; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (verticalLines[i][j] === 0) {
+                    availableMoves.push({
+                        dot1: { row: i, col: j, x: 0, y: 0 },
+                        dot2: { row: i + 1, col: j, x: 0, y: 0 }
+                    });
+                }
+            }
+        }
+        
+        if (availableMoves.length > 0) {
+            const randomMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            drawLine(randomMove.dot1, randomMove.dot2);
+        }
+    }
+    
     // Event listeners
     function handleMouseDown(e) {
+        if (isAiTurn || !gameActive) return;
+        
         const rect = canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
@@ -426,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleMouseMove(e) {
-        if (!isDragging || !startDot) return;
+        if (!isDragging || !startDot || isAiTurn || !gameActive) return;
         
         const rect = canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
@@ -460,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleMouseUp(e) {
-        if (!isDragging || !startDot) {
+        if (!isDragging || !startDot || isAiTurn || !gameActive) {
             isDragging = false;
             return;
         }
@@ -478,6 +803,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleTouchStart(e) {
+        if (isAiTurn || !gameActive) return;
+        
         e.preventDefault();
         if (e.touches.length !== 1) return;
         
@@ -493,8 +820,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleTouchMove(e) {
+        if (!isDragging || !startDot || isAiTurn || !gameActive) return;
+        
         e.preventDefault();
-        if (!isDragging || !startDot || e.touches.length !== 1) return;
+        if (e.touches.length !== 1) return;
         
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
@@ -529,11 +858,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function handleTouchEnd(e) {
-        e.preventDefault();
-        if (!isDragging || !startDot) {
+        if (!isDragging || !startDot || isAiTurn || !gameActive) {
             isDragging = false;
             return;
         }
+        
+        e.preventDefault();
         
         // Gebruik de laatste touch positie
         if (e.changedTouches.length > 0) {
