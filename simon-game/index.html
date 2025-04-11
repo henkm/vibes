@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Spel - Twee Spelers</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Simon Spel - Twee Spelers</h1>
+            <p class="subtitle">Test je geheugen tegen een vriend!</p>
+        </header>
+
+        <div class="game-modes">
+            <button id="game1-btn" class="mode-btn">Spelmodus 1: Simon zegt</button>
+            <button id="game2-btn" class="mode-btn">Spelmodus 2: Speler voegt toe</button>
+        </div>
+
+        <div class="game-info">
+            <div id="current-player" class="player-info">Speler 1 is aan zet</div>
+            <div id="sequence-length" class="sequence-info">Reekslengte: 0</div>
+        </div>
+
+        <div id="game-board" class="game-board">
+            <div id="red" class="simon-btn red" data-color="red"></div>
+            <div id="green" class="simon-btn green" data-color="green"></div>
+            <div id="blue" class="simon-btn blue" data-color="blue"></div>
+            <div id="yellow" class="simon-btn yellow" data-color="yellow"></div>
+        </div>
+
+        <div class="controls">
+            <button id="start-btn" class="control-btn">Start Spel</button>
+            <button id="reset-btn" class="control-btn">Reset</button>
+        </div>
+
+        <div id="message" class="message-box"></div>
+
+        <div class="instructions">
+            <h2>Spelregels</h2>
+            <h3>Spelmodus 1: Simon zegt</h3>
+            <p>Simon genereert een sequentie, en spelers wisselen elkaar af om de steeds langer wordende reeks te herhalen. Bij een fout eindigt het spel en wint degene die de laatste correcte invoer deed.</p>
+            
+            <h3>Spelmodus 2: Speler voegt toe</h3>
+            <p>Simon begint met één willekeurige kleur. Elke speler herhaalt de volledige reeks én voegt er telkens één nieuwe kleur aan toe. Een speler die een fout maakt, verliest; de andere speler wint.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
