@@ -37,6 +37,18 @@ let audioContext = null;
 
 // Initialize the game
 function init() {
+    // Voorkom standaard context menu op rechtermuisklik/lang indrukken
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    
+    // Voorkom standaard touch gedragingen die tekstselectie kunnen veroorzaken
+    document.addEventListener('touchstart', (e) => {
+        if (e.target.classList.contains('simon-btn') || 
+            e.target.classList.contains('control-btn') || 
+            e.target.classList.contains('mode-btn')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
     // Set up event listeners
     startButton.addEventListener('click', startGame);
     resetButton.addEventListener('click', resetGame);
@@ -300,7 +312,12 @@ function handleKeyPress(e) {
     }
     
     playColor(color);
-    checkPlayerInput(color);
+    
+    if (isAddingColor) {
+        addColorHandler(color);
+    } else {
+        checkPlayerInput(color);
+    }
 }
 
 // Game over function
